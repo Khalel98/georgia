@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Конвертер валют — Грузия</title>
+  <link rel="stylesheet" href="css/common.css" />
+  <style>
+    .conv-grid {
+      display: grid;
+      gap: 1rem;
+      max-width: 420px;
+    }
+
+    .conv-row label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .conv-out {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .conv-out p {
+      margin: 0.35rem 0;
+      font-size: 1rem;
+    }
+
+    .conv-out strong {
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Разделы сайта">
+    <a class="brand" href="index.html">Грузия</a>
+    <div class="nav-links">
+      <a href="index.html">Расписание</a>
+      <a href="razgovornik.html">Разговорник</a>
+      <a href="converter.html" aria-current="page">Валюта</a>
+      <a href="pogoda.html">Погода</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header>
+      <h1 class="page-h1">Конвертер валют</h1>
+      <p class="page-lead">
+        Доллар США (USD), казахстанский тенге (KZT) и грузинский лари (GEL). Курсы подгружаются онлайн (без ключа API, подходит для GitHub Pages).
+      </p>
+    </header>
+
+    <div class="card conv-grid">
+      <div class="conv-row">
+        <label for="amount">Сумма</label>
+        <input type="number" id="amount" value="100" min="0" step="any" inputmode="decimal" />
+      </div>
+      <div class="conv-row">
+        <label for="from">Из валюты</label>
+        <select id="from">
+          <option value="USD">USD — доллар</option>
+          <option value="GEL">GEL — лари</option>
+          <option value="KZT">KZT — тенге</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary" id="refresh">Обновить курс</button>
+      <p class="muted" id="rateDate"></p>
+      <p class="err" id="rateErr" hidden></p>
+    </div>
+
+    <div class="conv-out" id="results" hidden>
+      <p><strong>USD:</strong> <span id="outUsd">—</span></p>
+      <p><strong>GEL:</strong> <span id="outGel">—</span></p>
+      <p><strong>KZT:</strong> <span id="outKzt">—</span></p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API = "https://latest.currency-api.pages.dev/v1/currencies/usd.json";
+      let gelPerUsd = null;
+      let kztPerUsd = null;
+
+      const amountEl = document.getElementById("amount");
+      const fromEl = document.getElementById("from");
+      const refreshBtn = document.getElementById("refresh");
+      const rateDateEl = document.getElementById("rateDate");
+      const rateErrEl = document.getElementById("rateErr");
+      const resultsEl = document.getElementById("results");
+      const outUsd = document.getElementById("outUsd");
+      const outGel = document.getElementById("outGel");
+      const outKzt = document.getElementById("outKzt");
+
+      function fmt(n) {
+        if (!isFinite(n)) return "—";
+        if (Math.abs(n) >= 1000) return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
+        return n.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      function toUsd(amount, code) {
+        if (code === "USD") return amount;
+        if (code === "GEL") return amount / gelPerUsd;
+        if (code === "KZT") return amount / kztPerUsd;
+        return NaN;
+      }
+
+      function compute() {
+        if (gelPerUsd == null || kztPerUsd == null) return;
+        const raw = parseFloat(String(amountEl.value).replace(",", "."), 10);
+        const amt = isFinite(raw) ? raw : 0;
+        const from = fromEl.value;
+        const usd = toUsd(amt, from);
+        const gel = usd * gelPerUsd;
+        const kzt = usd * kztPerUsd;
+        outUsd.textContent = fmt(usd) + " $";
+        outGel.textContent = fmt(gel) + " ₾";
+        outKzt.textContent = fmt(kzt) + " ₸";
+        resultsEl.hidden = false;
+      }
+
+      async function loadRates() {
+        rateErrEl.hidden = true;
+        rateErrEl.textContent = "";
+        rateDateEl.textContent = "Загрузка…";
+        try {
+          const r = await fetch(API);
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          const j = await r.json();
+          const u = j.usd || j.USD;
+          if (!u || u.gel == null || u.kzt == null) throw new Error("Нет полей gel/kzt");
+          gelPerUsd = Number(u.gel);
+          kztPerUsd = Number(u.kzt);
+          rateDateEl.textContent =
+            "Данные API за " + (j.date || "—") + ": 1 USD = " + fmt(gelPerUsd) + " GEL, 1 USD = " + fmt(kztPerUsd) + " KZT";
+          compute();
+        } catch (e) {
+          gelPerUsd = null;
+          kztPerUsd = null;
+          rateDateEl.textContent = "";
+          rateErrEl.hidden = false;
+          rateErrEl.textContent =
+            "Не удалось загрузить курс (интернет или сервис). Попробуйте «Обновить» позже.";
+          resultsEl.hidden = true;
+        }
+      }
+
+      amountEl.addEventListener("input", compute);
+      fromEl.addEventListener("change", compute);
+      refreshBtn.addEventListener("click", loadRates);
+      loadRates();
+    })();
+  </script>
+</body>
+</html>
