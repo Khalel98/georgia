@@ -267,6 +267,191 @@
       border-color: var(--accent);
     }
 
+    .event.event--detail {
+      cursor: pointer;
+      border-radius: var(--radius);
+      margin: 0 -0.35rem;
+      padding-left: 0.35rem;
+      padding-right: 0.35rem;
+    }
+
+    .event.event--detail:hover {
+      background: var(--surface2);
+    }
+
+    .event.event--detail:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .place-modal[hidden] {
+      display: none !important;
+    }
+
+    .place-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+      .place-modal {
+        align-items: center;
+      }
+    }
+
+    .place-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+    }
+
+    .place-modal-panel {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 520px;
+      max-height: min(92vh, 720px);
+      overflow: auto;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+      padding: 1rem 1rem 1.1rem;
+    }
+
+    .place-modal-close {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .place-modal-close:hover {
+      border-color: var(--accent);
+    }
+
+    .place-modal-panel h3 {
+      margin: 0 2.25rem 0.65rem 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .place-slider {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.35rem;
+      align-items: center;
+      margin-bottom: 0.35rem;
+    }
+
+    .place-slider-view {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      aspect-ratio: 16 / 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .place-slider-view img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .place-slider-prev,
+    .place-slider-next {
+      font: inherit;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .place-slider-prev:hover,
+    .place-slider-next:hover {
+      border-color: var(--accent);
+    }
+
+    .place-slider-prev:disabled,
+    .place-slider-next:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .place-slider-counter {
+      margin: 0 0 0.65rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .place-modal-body p {
+      margin: 0 0 0.65rem;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .place-modal-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .place-modal-tips {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .place-modal-tips h4 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gold);
+    }
+
+    .place-modal-tips ul {
+      margin: 0;
+      padding: 0 0 0 1.1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .place-modal-tips li {
+      margin-bottom: 0.4rem;
+    }
+
+    .place-modal-tips li:last-child {
+      margin-bottom: 0;
+    }
+
     @media (max-width: 520px) {
       .event {
         grid-template-columns: 1fr;
@@ -300,6 +485,30 @@
 
   <button type="button" class="jump-top" id="top" title="Наверх">↑</button>
 
+  <div id="place-modal" class="place-modal" hidden>
+    <div class="place-modal-backdrop" data-place-close tabindex="-1"></div>
+    <div
+      class="place-modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="place-modal-title"
+    >
+      <button type="button" class="place-modal-close" data-place-close aria-label="Закрыть">×</button>
+      <h3 id="place-modal-title"></h3>
+      <div class="place-slider">
+        <button type="button" class="place-slider-prev" id="place-slider-prev" aria-label="Предыдущее фото">‹</button>
+        <div class="place-slider-view">
+          <img id="place-slider-img" src="" alt="" width="800" height="500" decoding="async" />
+        </div>
+        <button type="button" class="place-slider-next" id="place-slider-next" aria-label="Следующее фото">›</button>
+      </div>
+      <p class="place-slider-counter" id="place-slider-counter"></p>
+      <div id="place-modal-body" class="place-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="places-info.js"></script>
+  <script src="places-images.js"></script>
   <script id="data" type="application/json">
 [
   {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"11:00","program":"Прибытие в Кутаиси, прохождение таможни, оформление сим карт.","cost":"35 лари за симку ( по желанию)"},
@@ -354,12 +563,23 @@
 
   <script>
     (function () {
-      const items = JSON.parse(document.getElementById("data").textContent);
+      const raw = JSON.parse(document.getElementById("data").textContent);
+      const items = raw.map(function (row, i) {
+        row._i = i;
+        return row;
+      });
       const scheduleEl = document.getElementById("schedule");
       const tabsEl = document.getElementById("tabs");
       const statsEl = document.getElementById("stats");
       const qEl = document.getElementById("q");
       const topBtn = document.getElementById("top");
+      const placeModal = document.getElementById("place-modal");
+      const placeTitle = document.getElementById("place-modal-title");
+      const placeBody = document.getElementById("place-modal-body");
+      const placeImg = document.getElementById("place-slider-img");
+      const placePrev = document.getElementById("place-slider-prev");
+      const placeNext = document.getElementById("place-slider-next");
+      const placeCounter = document.getElementById("place-slider-counter");
 
       const days = [...new Set(items.map((i) => i.day))].sort((a, b) => a - b);
       let filterDay = null;
@@ -406,7 +626,14 @@
             const costHtml = ev.cost
               ? `<p class="event-cost">${escapeHtml(ev.cost)}</p>`
               : "";
-            html += `<article class="event" data-day="${ev.day}">`;
+            const hasExtra =
+              window.EVENT_PLACES &&
+              window.EVENT_PLACES[ev._i] != null;
+            const detailClass = hasExtra ? " event event--detail" : " event";
+            const extraAttrs = hasExtra
+              ? ` data-i="${ev._i}" tabindex="0" role="button" aria-label="Подробнее о пункте"`
+              : "";
+            html += `<article class="${detailClass.trim()}" data-day="${ev.day}"${extraAttrs}>`;
             html += `<div class="event-time">${escapeHtml(ev.time)}</div>`;
             html += `<div class="event-body">`;
             html += `<p class="event-program">${escapeHtml(ev.program)}</p>`;
@@ -444,6 +671,119 @@
         div.textContent = t;
         return div.innerHTML;
       }
+
+      function placeImagePaths(index) {
+        const list =
+          window.EVENT_IMAGES &&
+          window.EVENT_IMAGES[index] &&
+          window.EVENT_IMAGES[index].length
+            ? window.EVENT_IMAGES[index]
+            : [];
+        return list.slice();
+      }
+
+      let modalSlide = 0;
+      let modalImages = [];
+
+      function updatePlaceSlider() {
+        if (!modalImages.length) return;
+        modalSlide = (modalSlide + modalImages.length) % modalImages.length;
+        placeImg.src = modalImages[modalSlide];
+        placeImg.alt = placeTitle.textContent || "Фото";
+        placeCounter.textContent =
+          modalImages.length > 1
+            ? modalSlide + 1 + " / " + modalImages.length
+            : "";
+        placePrev.disabled = modalImages.length < 2;
+        placeNext.disabled = modalImages.length < 2;
+      }
+
+      function openPlaceModal(index) {
+        const extra =
+          window.EVENT_PLACES && window.EVENT_PLACES[index]
+            ? window.EVENT_PLACES[index]
+            : null;
+        if (!extra) return;
+        placeTitle.textContent = extra.title || "Справка";
+        let bodyHtml = (extra.paragraphs || [])
+          .map(function (p) {
+            return "<p>" + escapeHtml(p) + "</p>";
+          })
+          .join("");
+        const tips = extra.tips && extra.tips.length ? extra.tips : [];
+        if (tips.length) {
+          bodyHtml +=
+            '<div class="place-modal-tips"><h4>Советы и лайфхаки</h4><ul role="list">';
+          tips.forEach(function (t) {
+            bodyHtml += "<li>" + escapeHtml(t) + "</li>";
+          });
+          bodyHtml += "</ul></div>";
+        }
+        placeBody.innerHTML = bodyHtml;
+        modalImages = placeImagePaths(index);
+        if (!modalImages.length) {
+          modalImages = ["places/caucasus-landscape.jpg"];
+        }
+        modalSlide = 0;
+        placeModal.hidden = false;
+        placeModal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        updatePlaceSlider();
+        placeModal.querySelector(".place-modal-close").focus();
+      }
+
+      function closePlaceModal() {
+        placeModal.hidden = true;
+        placeModal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        placeImg.removeAttribute("src");
+      }
+
+      scheduleEl.addEventListener("click", function (e) {
+        const art = e.target.closest(".event.event--detail");
+        if (!art) return;
+        const i = parseInt(art.getAttribute("data-i"), 10);
+        if (!window.EVENT_PLACES || !window.EVENT_PLACES[i]) return;
+        openPlaceModal(i);
+      });
+
+      scheduleEl.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const art = e.target.closest(".event.event--detail");
+        if (!art) return;
+        e.preventDefault();
+        const i = parseInt(art.getAttribute("data-i"), 10);
+        if (!window.EVENT_PLACES || !window.EVENT_PLACES[i]) return;
+        openPlaceModal(i);
+      });
+
+      placeModal.addEventListener("click", function (e) {
+        if (e.target.hasAttribute("data-place-close")) closePlaceModal();
+      });
+
+      placePrev.addEventListener("click", function () {
+        modalSlide -= 1;
+        updatePlaceSlider();
+      });
+
+      placeNext.addEventListener("click", function () {
+        modalSlide += 1;
+        updatePlaceSlider();
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (placeModal.hidden) return;
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closePlaceModal();
+        } else if (e.key === "ArrowLeft" && modalImages.length > 1) {
+          modalSlide -= 1;
+          updatePlaceSlider();
+        } else if (e.key === "ArrowRight" && modalImages.length > 1) {
+          modalSlide += 1;
+          updatePlaceSlider();
+        }
+      });
 
       const allBtn = document.createElement("button");
       allBtn.type = "button";
