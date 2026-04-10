@@ -83,6 +83,7 @@
   <script>
     (function () {
       const API = "https://latest.currency-api.pages.dev/v1/currencies/usd.json";
+      const RATES_LS = "gruzia-rates-v1";
       let gelPerUsd = null;
       let kztPerUsd = null;
 
@@ -123,6 +124,32 @@
         resultsEl.hidden = false;
       }
 
+      function loadRatesFromStorage() {
+        try {
+          const raw = localStorage.getItem(RATES_LS);
+          if (!raw) return false;
+          const o = JSON.parse(raw);
+          if (o.gel == null || o.kzt == null) return false;
+          gelPerUsd = Number(o.gel);
+          kztPerUsd = Number(o.kzt);
+          rateDateEl.textContent =
+            "Офлайн — сохранённые курсы от " +
+            (o.savedAt || "—") +
+            " (API за " +
+            (o.apiDate || "—") +
+            "): 1 USD = " +
+            fmt(gelPerUsd) +
+            " GEL, 1 USD = " +
+            fmt(kztPerUsd) +
+            " KZT";
+          rateErrEl.hidden = true;
+          compute();
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
       async function loadRates() {
         rateErrEl.hidden = true;
         rateErrEl.textContent = "";
@@ -137,15 +164,37 @@
           kztPerUsd = Number(u.kzt);
           rateDateEl.textContent =
             "Данные API за " + (j.date || "—") + ": 1 USD = " + fmt(gelPerUsd) + " GEL, 1 USD = " + fmt(kztPerUsd) + " KZT";
+          try {
+            localStorage.setItem(
+              RATES_LS,
+              JSON.stringify({
+                gel: gelPerUsd,
+                kzt: kztPerUsd,
+                apiDate: j.date || "",
+                savedAt: new Date().toLocaleString("ru-RU", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                }),
+              })
+            );
+          } catch (e) {
+            /* ignore */
+          }
           compute();
         } catch (e) {
-          gelPerUsd = null;
-          kztPerUsd = null;
-          rateDateEl.textContent = "";
-          rateErrEl.hidden = false;
-          rateErrEl.textContent =
-            "Не удалось загрузить курс (интернет или сервис). Попробуйте «Обновить» позже.";
-          resultsEl.hidden = true;
+          if (!loadRatesFromStorage()) {
+            gelPerUsd = null;
+            kztPerUsd = null;
+            rateDateEl.textContent = "";
+            rateErrEl.hidden = false;
+            rateErrEl.textContent =
+              "Не удалось загрузить курс (интернет или сервис). Попробуйте «Обновить» позже.";
+            resultsEl.hidden = true;
+          } else {
+            rateErrEl.hidden = false;
+            rateErrEl.textContent =
+              "Нет сети — показаны последние сохранённые курсы. Подключите интернет и нажмите «Обновить курс».";
+          }
         }
       }
 
@@ -155,5 +204,6 @@
       loadRates();
     })();
   </script>
+  <script src="register-sw.js"></script>
 </body>
 </html>

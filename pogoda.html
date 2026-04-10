@@ -73,6 +73,7 @@
 
   <script>
     (function () {
+      const WX_LS = "gruzia-weather-snapshot-v1";
       const CITIES = [
         { name: "Кутаиси", lat: 42.27, lon: 42.7 },
         { name: "Тбилиси", lat: 41.7151, lon: 44.8271 },
@@ -142,6 +143,7 @@
           const results = await Promise.all(CITIES.map(loadCity));
           status.textContent =
             "Обновлено: " + new Date().toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" });
+          let builtHtml = "";
           results.forEach(function (res) {
             const d = res.daily;
             const n = d.time.length;
@@ -158,16 +160,46 @@
               rows +
               "</tbody></table>";
             root.appendChild(card);
+            builtHtml += card.outerHTML;
           });
+          try {
+            localStorage.setItem(
+              WX_LS,
+              JSON.stringify({
+                status: status.textContent,
+                html: builtHtml,
+              })
+            );
+          } catch (e) {
+            /* ignore */
+          }
         } catch (e) {
+          try {
+            const raw = localStorage.getItem(WX_LS);
+            if (raw) {
+              const o = JSON.parse(raw);
+              if (o.html) {
+                root.innerHTML = o.html;
+                status.textContent =
+                  (o.status || "") +
+                  " (офлайн — сохранённый прогноз)";
+                errEl.hidden = true;
+                return;
+              }
+            }
+          } catch (x) {
+            /* ignore */
+          }
           status.textContent = "";
           errEl.hidden = false;
-          errEl.textContent = "Не удалось загрузить погоду. Проверьте интернет и откройте страницу снова.";
+          errEl.textContent =
+            "Не удалось загрузить погоду. Проверьте интернет и откройте страницу снова.";
         }
       }
 
       run();
     })();
   </script>
+  <script src="register-sw.js"></script>
 </body>
 </html>
