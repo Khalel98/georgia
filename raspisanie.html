@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Грузия — расписание 1–8 мая</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222d;
+      --surface2: #232d3b;
+      --border: #2e3a4d;
+      --text: #e8ecf1;
+      --muted: #8b9cb3;
+      --accent: #c41e3a;
+      --accent-dim: rgba(196, 30, 58, 0.15);
+      --gold: #d4a84b;
+      --gold-dim: rgba(212, 168, 75, 0.12);
+      --green: #2d6a4f;
+      --radius: 12px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      background-image:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(196, 30, 58, 0.18), transparent),
+        radial-gradient(ellipse 80% 50% at 100% 50%, rgba(45, 106, 79, 0.12), transparent);
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.35rem, 4vw, 1.75rem);
+      font-weight: 700;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .search {
+      flex: 1 1 200px;
+      min-width: 160px;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .search input::placeholder {
+      color: var(--muted);
+    }
+
+    .search input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .day-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .day-tabs button {
+      font: inherit;
+      cursor: pointer;
+      padding: 0.5rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.85rem;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .day-tabs button:hover {
+      background: var(--surface2);
+      border-color: var(--muted);
+    }
+
+    .day-tabs button[aria-pressed="true"] {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .day-tabs button.all {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .day-tabs button.all[aria-pressed="true"] {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .stats {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    .day-block {
+      margin-bottom: 2rem;
+    }
+
+    .day-block h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--green);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .day-block h2 .badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--surface2);
+      color: var(--muted);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 0;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 4.5rem 1fr;
+      gap: 0.75rem 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+
+    .event:last-child {
+      border-bottom: none;
+    }
+
+    .event-time {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--gold);
+      padding-top: 0.15rem;
+    }
+
+    .event-body {
+      min-width: 0;
+    }
+
+    .event-program {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .event-cost {
+      margin: 0.4rem 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding-left: 0.65rem;
+      border-left: 3px solid var(--accent);
+    }
+
+    .event-cost:empty {
+      display: none;
+    }
+
+    .event.hidden {
+      display: none;
+    }
+
+    .day-block.hidden {
+      display: none;
+    }
+
+    .jump-top {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .jump-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .jump-top:hover {
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 520px) {
+      .event {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .event-time {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Грузия — поездка</h1>
+      <p id="subtitle">Программа времяпровождения в Грузии с 1 мая по 8 мая (7 мая Алматы). Фильтр по дням и поиск по всему тексту.</p>
+    </header>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="visually-hidden">Поиск</span>
+        <input type="search" id="q" placeholder="Поиск: город, ресторан, активность…" autocomplete="off" />
+      </label>
+    </div>
+
+    <div class="day-tabs" id="tabs" role="tablist" aria-label="День поездки"></div>
+    <p class="stats" id="stats" aria-live="polite"></p>
+    <div id="schedule"></div>
+  </div>
+
+  <button type="button" class="jump-top" id="top" title="Наверх">↑</button>
+
+  <script id="data" type="application/json">
+[
+  {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"11:00","program":"Прибытие в Кутаиси, прохождение таможни, оформление сим карт.","cost":"35 лари за симку ( по желанию)"},
+  {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"12:00","program":"Обед в придорожном кафе. Выезд в Тбилиси","cost":"средний чек 30 лари на человека"},
+  {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"16:00","program":"Прибытие в Тбилиси. Заселение в квартиру.","cost":"квартира в Тбилиси 130 лари, у Толика отдельно"},
+  {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"17:00","program":"Выезд в город. Прогулка по мосту мира. Подъём к монументу «Мать Картли».","cost":"6 лари на подъём на фуникулере на «Мать Картли»."},
+  {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"19:00","program":"Ужин в старом городе, ресторан «Sarke». Пешая прогулка по красивым улочкам старого Тбилиси.","cost":"Ужин средний чек 40 лари на человека."},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"09:00","program":"Завтрак на дому. Выезд с квартиры.","cost":""},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"10:00","program":"Монумент История Грузии. Монастырь Джвари. Первая столица Грузинской империи — Мцхета.","cost":""},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"13:00","program":"Обед в Мцхета","cost":"Средний чек 40 лари на человека"},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"14:00","program":"Выезд в Боржоми.","cost":""},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"16:00","program":"Прибытие в Боржоми. Прогулка по парку. Питье натуральной минеральной водички с источника.","cost":"5 лари вход в парк Боржоми. Канатная дорога 30 лари в обе стороны."},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"18:00","program":"Ужин в Боржоми.","cost":"Средний чек 40 лари на человека"},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"19:00","program":"Выезд в Батуми.","cost":""},
+  {"day":2,"label":"2 мая","title":"2 день 2 мая","time":"22:00","program":"Прибытие в Батуми. Заселение в апартаменты. Вечерняя прогулка по набережной","cost":"100 лари стоимость номера за сутки."},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"08:00","program":"Завтрак на дому.","cost":""},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"09:00","program":"Выезд на водопад Махунцети. Слияние двух рек. Водопад Кибура.","cost":"Также есть возможность скатиться на зиплайне, стоимость 70 лари"},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"12:00","program":"Обед возле водопада в кафе «Café Bar Shergebuli»","cost":"Средний чек 40 лари на человека."},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"14:00","program":"Прибытие в Батуми. Прогулка по набережной. Скульптура Али и Нино. Катание на яхте с видом на город.","cost":"Корабль стоимость 20 лари на человека."},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"18:00","program":"Прибытие в гостиницу и отдых. Ранний ужин в столовой возле дома.","cost":"Средний чек в столовой 15 лари на человека."},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"20:00","program":"Прогулка по ночной набережной, катание на колесе обозрения. Площадь Пьяцца. Фонтан Нептуна.","cost":"Колесо обозрения 10 лари на человека."},
+  {"day":3,"label":"3 мая","title":"3 день 3 мая","time":"22:00","program":"Ужин в ресторане на площади Пьяца","cost":"Средний чек 80 лари на человека"},
+  {"day":4,"label":"4 мая","title":"4 день 4 мая","time":"09:00","program":"Завтрак на дому. Подъём.","cost":""},
+  {"day":4,"label":"4 мая","title":"4 день 4 мая","time":"10:00","program":"Выезд на Батумский «Хопа» базар (вещевой). День шопинга.","cost":""},
+  {"day":4,"label":"4 мая","title":"4 день 4 мая","time":"14:00","program":"Обед.","cost":"Средний чек 30 лари."},
+  {"day":4,"label":"4 мая","title":"4 день 4 мая","time":"15:00","program":"Посещение торговых центров Гранд молл и Метросити молл.","cost":""},
+  {"day":4,"label":"4 мая","title":"4 день 4 мая","time":"19:00","program":"Площадь Европы и старый Батуми.","cost":""},
+  {"day":4,"label":"4 мая","title":"4 день 4 мая","time":"21:00","program":"Ужин в турецком ресторане в старой части Батуми.","cost":"Средний чек 25 лари на человека."},
+  {"day":5,"label":"5 мая","title":"5 день 5 мая","time":"08:00","program":"Подъём. Завтрак на дому.","cost":""},
+  {"day":5,"label":"5 мая","title":"5 день 5 мая","time":"09:00","program":"Выезд в Ботанический сад","cost":"Вход в ботанический сад 25 лари на человека, также есть возможность скатиться на зиплайне, стоимость 70 лари. Можно взять в аренду электромобиль на территории сада"},
+  {"day":5,"label":"5 мая","title":"5 день 5 мая","time":"13:00","program":"Обед в рыбном ресторане «Fishlandia»","cost":"Средний чек 50 лари на человека."},
+  {"day":5,"label":"5 мая","title":"5 день 5 мая","time":"15:00","program":"Батумский продуктовый рынок.","cost":""},
+  {"day":5,"label":"5 мая","title":"5 день 5 мая","time":"17:00","program":"Свободный график до 20:00","cost":""},
+  {"day":5,"label":"5 мая","title":"5 день 5 мая","time":"20:00","program":"Ужин — ресторан на Алфавитной башне.","cost":"Средний чек 100 лари на человека."},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"09:00","program":"Завтрак на дому","cost":""},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"10:00","program":"Сборы вещей, подготовка к выселению.","cost":""},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"12:00","program":"Выселение с отеля.","cost":""},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"13:00","program":"Обед в ресторане «Украиночка»","cost":"Средний чек 50 лари на человека."},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"14:00","program":"Выезд в Кутаиси.","cost":""},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"18:00","program":"Прибытие в Кутаиси, заселение в гостевой домик.","cost":"70 лари за номер сутки."},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"19:00","program":"Ужин в ресторане «Medea Bar»","cost":"Средний чек 40 лари на человека"},
+  {"day":6,"label":"6 мая","title":"6 день 6 мая","time":"20:00","program":"Прогулка по ночному Кутаиси. Стеклянный мост. Улица баров.","cost":""},
+  {"day":7,"label":"7 мая","title":"7 день 7 мая","time":"09:00","program":"Завтрак на дому.","cost":""},
+  {"day":7,"label":"7 мая","title":"7 день 7 мая","time":"10:00","program":"Выезд к пещере Прометея.","cost":"Стоимость 40 лари"},
+  {"day":7,"label":"7 мая","title":"7 день 7 мая","time":"13:00","program":"Обед в «Khinkali house+» в Цхалтубо","cost":"Средний чек 40 лари на человека."},
+  {"day":7,"label":"7 мая","title":"7 день 7 мая","time":"15:30","program":"Мартвильский каньон.","cost":"Стоимость 20 лари"},
+  {"day":7,"label":"7 мая","title":"7 день 7 мая","time":"19:00","program":"Ужин в ресторане «Sisters»","cost":"Средний чек 50 лари на человека."},
+  {"day":8,"label":"8 мая","title":"8 день 8 мая","time":"08:00","program":"Завтрак на дому.","cost":""},
+  {"day":8,"label":"8 мая","title":"8 день 8 мая","time":"09:00","program":"Выселение с отеля. Выезд в аэропорт.","cost":""}
+]
+  </script>
+
+  <script>
+    (function () {
+      const items = JSON.parse(document.getElementById("data").textContent);
+      const scheduleEl = document.getElementById("schedule");
+      const tabsEl = document.getElementById("tabs");
+      const statsEl = document.getElementById("stats");
+      const qEl = document.getElementById("q");
+      const topBtn = document.getElementById("top");
+
+      const days = [...new Set(items.map((i) => i.day))].sort((a, b) => a - b);
+      let filterDay = null;
+
+      function norm(s) {
+        return (s || "").toLowerCase();
+      }
+
+      function matchesQuery(item, q) {
+        if (!q.trim()) return true;
+        const n = norm(q);
+        return (
+          norm(item.program).includes(n) ||
+          norm(item.cost).includes(n) ||
+          norm(item.title).includes(n) ||
+          norm(item.label).includes(n) ||
+          norm(item.time).includes(n)
+        );
+      }
+
+      function render() {
+        const q = qEl.value;
+        const byDay = {};
+        days.forEach((d) => {
+          byDay[d] = [];
+        });
+        items.forEach((item) => {
+          if (filterDay !== null && item.day !== filterDay) return;
+          if (!matchesQuery(item, q)) return;
+          byDay[item.day].push(item);
+        });
+
+        let html = "";
+        let totalShown = 0;
+        days.forEach((d) => {
+          const list = byDay[d];
+          if (!list.length) return;
+          totalShown += list.length;
+          const first = list[0];
+          html += `<section class="day-block" data-day="${d}" id="day-${d}">`;
+          html += `<h2>${first.title} <span class="badge">${list.length} пункта</span></h2>`;
+          html += `<div class="timeline">`;
+          list.forEach((ev) => {
+            const costHtml = ev.cost
+              ? `<p class="event-cost">${escapeHtml(ev.cost)}</p>`
+              : "";
+            html += `<article class="event" data-day="${ev.day}">`;
+            html += `<div class="event-time">${escapeHtml(ev.time)}</div>`;
+            html += `<div class="event-body">`;
+            html += `<p class="event-program">${escapeHtml(ev.program)}</p>`;
+            html += costHtml;
+            html += `</div></article>`;
+          });
+          html += `</div></section>`;
+        });
+
+        if (!html) {
+          scheduleEl.innerHTML =
+            '<p class="empty">Ничего не найдено. Смените день или очистите поиск.</p>';
+        } else {
+          scheduleEl.innerHTML = html;
+        }
+
+        const totalAll = items.filter(
+          (i) => filterDay === null || i.day === filterDay
+        ).length;
+        const filtered = items.filter(
+          (i) =>
+            (filterDay === null || i.day === filterDay) && matchesQuery(i, q)
+        ).length;
+        if (q.trim()) {
+          statsEl.textContent = `Показано ${filtered} из ${totalAll} пунктов`;
+        } else if (filterDay !== null) {
+          statsEl.textContent = `День ${filterDay}: ${filtered} пунктов`;
+        } else {
+          statsEl.textContent = `Всего ${items.length} пунктов в программе`;
+        }
+      }
+
+      function escapeHtml(t) {
+        const div = document.createElement("div");
+        div.textContent = t;
+        return div.innerHTML;
+      }
+
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "all";
+      allBtn.textContent = "Все дни";
+      allBtn.setAttribute("role", "tab");
+      allBtn.setAttribute("aria-pressed", "true");
+      allBtn.addEventListener("click", () => {
+        filterDay = null;
+        updateTabs();
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      tabsEl.appendChild(allBtn);
+
+      days.forEach((d) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const label = items.find((i) => i.day === d).label;
+        btn.textContent = `День ${d} · ${label}`;
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("aria-pressed", "false");
+        btn.addEventListener("click", () => {
+          filterDay = d;
+          updateTabs();
+          render();
+          const el = document.getElementById("day-" + d);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        tabsEl.appendChild(btn);
+      });
+
+      function updateTabs() {
+        const buttons = tabsEl.querySelectorAll("button");
+        buttons.forEach((b, i) => {
+          if (i === 0) {
+            b.setAttribute("aria-pressed", filterDay === null ? "true" : "false");
+          } else {
+            const d = days[i - 1];
+            b.setAttribute("aria-pressed", filterDay === d ? "true" : "false");
+          }
+        });
+      }
+
+      qEl.addEventListener("input", render);
+      qEl.addEventListener("search", render);
+
+      window.addEventListener("scroll", () => {
+        topBtn.classList.toggle("visible", window.scrollY > 400);
+      });
+      topBtn.addEventListener("click", () =>
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      );
+
+      render();
+    })();
+  </script>
+</body>
+</html>
