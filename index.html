@@ -390,6 +390,70 @@
       margin-bottom: 0;
     }
 
+    .place-modal-maps {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .place-modal-maps-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .place-modal-maps-hint {
+      margin: 0.5rem 0 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .place-modal-maps .btn-maps-google {
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+      font: inherit;
+      cursor: pointer;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--accent);
+      background: var(--accent-dim);
+      color: #fff;
+    }
+
+    .place-modal-maps .btn-maps-google:hover {
+      filter: brightness(1.08);
+    }
+
+    .event-actions {
+      margin-top: 0.55rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .btn-route {
+      display: inline-block;
+      font: inherit;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-dim);
+      color: #fff;
+      text-decoration: none;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .btn-route:hover {
+      filter: brightness(1.06);
+    }
+
     @media (max-width: 520px) {
       .event {
         grid-template-columns: 1fr;
@@ -415,7 +479,10 @@
   <div class="wrap">
     <header>
       <h1 class="page-h1">Расписание поездки</h1>
-      <p id="subtitle" class="page-lead">Программа с 1 по 8 мая (7 мая — Алматы). Фильтр по дням и поиск. Нажмите на пункт — подробности и фото.</p>
+      <p id="subtitle" class="page-lead">
+        Программа с 1 по 8 мая (7 мая — Алматы). Фильтр по дням и поиск. Нажмите на пункт — подробности и фото.
+        «Проложить маршрут» открывает маршрут в Google Картах в новой вкладке (геолокация по желанию — как старт «отсюда»).
+      </p>
     </header>
 
     <div class="toolbar">
@@ -451,11 +518,16 @@
       </div>
       <p class="place-slider-counter" id="place-slider-counter"></p>
       <div id="place-modal-body" class="place-modal-body"></div>
+      <div id="place-modal-maps" class="place-modal-maps" hidden>
+        <div id="place-modal-maps-links" class="place-modal-maps-links"></div>
+        <p class="place-modal-maps-hint" id="place-modal-maps-hint" hidden></p>
+      </div>
     </div>
   </div>
 
   <script src="places-info.js"></script>
   <script src="places-images.js"></script>
+  <script src="place-routes.js"></script>
   <script id="data" type="application/json">
 [
   {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"11:00","program":"Прибытие в Кутаиси, прохождение таможни, оформление сим карт.","cost":"35 лари за симку ( по желанию)"},
@@ -527,6 +599,9 @@
       const placePrev = document.getElementById("place-slider-prev");
       const placeNext = document.getElementById("place-slider-next");
       const placeCounter = document.getElementById("place-slider-counter");
+      const placeModalMaps = document.getElementById("place-modal-maps");
+      const placeModalMapsLinks = document.getElementById("place-modal-maps-links");
+      const placeModalMapsHint = document.getElementById("place-modal-maps-hint");
 
       const days = [...new Set(items.map((i) => i.day))].sort((a, b) => a - b);
       let filterDay = null;
@@ -545,6 +620,54 @@
           norm(item.label).includes(n) ||
           norm(item.time).includes(n)
         );
+      }
+
+      function routeLabelFromQuery(q) {
+        const t = String(q).trim();
+        if (!t) return "Маршрут";
+        const i = t.indexOf(",");
+        return (i > 0 ? t.slice(0, i) : t).trim() || t;
+      }
+
+      /** { label, query } — query для Google, label для кнопки. */
+      function normalizeRouteItem(item) {
+        if (item == null) return null;
+        if (typeof item === "string") {
+          const query = item.trim();
+          if (!query) return null;
+          return { label: routeLabelFromQuery(query), query: query };
+        }
+        if (Array.isArray(item) && item.length >= 2) {
+          const label = String(item[0]).trim();
+          const query = String(item[1]).trim();
+          if (!query) return null;
+          return {
+            label: label || routeLabelFromQuery(query),
+            query: query,
+          };
+        }
+        return null;
+      }
+
+      /**
+       * Строка; или одна пара ["подпись", "запрос"] (две строки — одна кнопка);
+       * или несколько маршрутов — массив вложенных пар или строк.
+       */
+      function eventRoutesList(entry) {
+        if (entry == null) return [];
+        if (!Array.isArray(entry)) {
+          const one = normalizeRouteItem(entry);
+          return one ? [one] : [];
+        }
+        if (
+          entry.length === 2 &&
+          typeof entry[0] === "string" &&
+          typeof entry[1] === "string"
+        ) {
+          const one = normalizeRouteItem(entry);
+          return one ? [one] : [];
+        }
+        return entry.map(normalizeRouteItem).filter(Boolean);
       }
 
       function render() {
@@ -580,11 +703,37 @@
             const extraAttrs = hasExtra
               ? ` data-i="${ev._i}" tabindex="0" role="button" aria-label="Подробнее о пункте"`
               : "";
+            const routeList = eventRoutesList(
+              window.EVENT_ROUTES && window.EVENT_ROUTES[ev._i]
+            );
+            const routeBtn =
+              routeList.length > 0
+                ? `<div class="event-actions">${routeList
+                    .map(function (r, j) {
+                      const href = googleMapsDirUrl(r.query);
+                      const label = r.label;
+                      return (
+                        '<a class="btn-route" href="' +
+                        escapeHtml(href) +
+                        '" target="_blank" rel="noopener noreferrer" data-route-i="' +
+                        ev._i +
+                        '" data-route-j="' +
+                        j +
+                        '" aria-label="Маршрут: ' +
+                        escapeHtml(r.label) +
+                        '">' +
+                        escapeHtml(label) +
+                        "</a>"
+                      );
+                    })
+                    .join("")}</div>`
+                : "";
             html += `<article class="${detailClass.trim()}" data-day="${ev.day}"${extraAttrs}>`;
             html += `<div class="event-time">${escapeHtml(ev.time)}</div>`;
             html += `<div class="event-body">`;
             html += `<p class="event-program">${escapeHtml(ev.program)}</p>`;
             html += costHtml;
+            html += routeBtn;
             html += `</div></article>`;
           });
           html += `</div></section>`;
@@ -629,6 +778,63 @@
         return list.slice();
       }
 
+      /** Все маршруты — от текущего места до точки пункта (нужна геолокация в браузере). */
+      const GEO_FOR_ROUTE = {
+        enableHighAccuracy: true,
+        timeout: 16000,
+        maximumAge: 0,
+      };
+
+      /** Полная страница маршрута в новой вкладке (без Embed API). */
+      function googleMapsDirUrl(destination, originLat, originLng) {
+        const d = String(destination).trim();
+        if (/^https?:\/\//i.test(d)) {
+          if (originLat != null && originLng != null) {
+            return (
+              "https://www.google.com/maps/dir/?api=1&origin=" +
+              encodeURIComponent(String(originLat) + "," + String(originLng)) +
+              "&destination=" +
+              encodeURIComponent(d) +
+              "&travelmode=driving&hl=ru"
+            );
+          }
+          return d;
+        }
+        let u =
+          "https://www.google.com/maps/dir/?api=1&destination=" +
+          encodeURIComponent(d) +
+          "&travelmode=driving&hl=ru";
+        if (originLat != null && originLng != null) {
+          u +=
+            "&origin=" +
+            encodeURIComponent(String(originLat) + "," + String(originLng));
+        }
+        return u;
+      }
+
+      function openGoogleMapsRoute(destQuery) {
+        function go(lat, lng) {
+          window.open(
+            googleMapsDirUrl(destQuery, lat, lng),
+            "_blank",
+            "noopener,noreferrer"
+          );
+        }
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function (pos) {
+              go(pos.coords.latitude, pos.coords.longitude);
+            },
+            function () {
+              go(null, null);
+            },
+            GEO_FOR_ROUTE
+          );
+        } else {
+          go(null, null);
+        }
+      }
+
       let modalSlide = 0;
       let modalImages = [];
 
@@ -667,6 +873,67 @@
           bodyHtml += "</ul></div>";
         }
         placeBody.innerHTML = bodyHtml;
+        const routes = eventRoutesList(
+          window.EVENT_ROUTES && window.EVENT_ROUTES[index]
+        );
+        if (routes.length) {
+          placeModalMaps.hidden = false;
+          placeModalMapsLinks.innerHTML = routes
+            .map(function (r, j) {
+              const href = googleMapsDirUrl(r.query);
+              const label =
+                routes.length > 1 ? r.label : "Открыть в Google Картах";
+              return (
+                '<a class="btn-maps-google" href="' +
+                escapeHtml(href) +
+                '" target="_blank" rel="noopener noreferrer" data-place-route-j="' +
+                j +
+                '">' +
+                escapeHtml(label) +
+                "</a>"
+              );
+            })
+            .join("");
+          placeModalMapsHint.hidden = false;
+          placeModalMapsHint.textContent =
+            routes.length > 1
+              ? "Несколько точек в пункте — отдельные маршруты. Разрешите геолокацию: ссылки обновятся со стартом «отсюда»."
+              : "Маршрут в Google Картах — от вашего текущего места до точки пункта. Разрешите геолокацию: ссылка обновится с точным стартом.";
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              function (pos) {
+                if (placeModal.hidden) return;
+                const la = pos.coords.latitude;
+                const ln = pos.coords.longitude;
+                placeModalMapsLinks
+                  .querySelectorAll("a.btn-maps-google")
+                  .forEach(function (a) {
+                    const j = parseInt(a.getAttribute("data-place-route-j"), 10);
+                    const r = routes[j];
+                    if (r) {
+                      a.href = googleMapsDirUrl(r.query, la, ln);
+                    }
+                  });
+                placeModalMapsHint.textContent =
+                  "Ссылки ведут в Google Картах с маршрутом от вашего текущего места до выбранной цели.";
+              },
+              function () {
+                if (placeModal.hidden) return;
+                placeModalMapsHint.textContent =
+                  "Геолокация не разрешена — в Google Картах откройте маршрут и выберите старт «Моё местоположение».";
+              },
+              GEO_FOR_ROUTE
+            );
+          } else {
+            placeModalMapsHint.textContent =
+              "В этом браузере нет геолокации — в Google Картах выберите старт «Моё местоположение».";
+          }
+        } else {
+          placeModalMaps.hidden = true;
+          placeModalMapsLinks.innerHTML = "";
+          placeModalMapsHint.hidden = true;
+          placeModalMapsHint.textContent = "";
+        }
         modalImages = placeImagePaths(index);
         if (!modalImages.length) {
           modalImages = ["places/caucasus-landscape.jpg"];
@@ -682,11 +949,39 @@
       function closePlaceModal() {
         placeModal.hidden = true;
         placeModal.setAttribute("aria-hidden", "true");
+        placeModalMaps.hidden = true;
         document.body.style.overflow = "";
         placeImg.removeAttribute("src");
       }
 
       scheduleEl.addEventListener("click", function (e) {
+        const routeLink = e.target.closest("a.btn-route");
+        if (routeLink) {
+          if (
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          ) {
+            return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          const ri = parseInt(routeLink.getAttribute("data-route-i"), 10);
+          const rj = parseInt(
+            routeLink.getAttribute("data-route-j") || "0",
+            10
+          );
+          const routeList = eventRoutesList(
+            window.EVENT_ROUTES && window.EVENT_ROUTES[ri]
+          );
+          const r = routeList[rj];
+          if (r) {
+            openGoogleMapsRoute(r.query);
+          }
+          return;
+        }
         const art = e.target.closest(".event.event--detail");
         if (!art) return;
         const i = parseInt(art.getAttribute("data-i"), 10);
