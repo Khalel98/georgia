@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Погода — Грузия</title>
+  <link rel="stylesheet" href="css/common.css" />
+  <style>
+    .weather-cities {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 900px) {
+      .weather-cities {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .city-card h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1.05rem;
+      color: var(--gold);
+    }
+
+    .city-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .city-table th,
+    .city-table td {
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.45rem;
+      text-align: left;
+    }
+
+    .city-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .temp {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Разделы сайта">
+    <a class="brand" href="index.html">Грузия</a>
+    <div class="nav-links">
+      <a href="index.html">Расписание</a>
+      <a href="razgovornik.html">Разговорник</a>
+      <a href="converter.html">Валюта</a>
+      <a href="pogoda.html" aria-current="page">Погода</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header>
+      <h1 class="page-h1">Погода на 7 дней</h1>
+      <p class="page-lead">
+        Прогноз из Open-Meteo (бесплатно, без ключа). Часовой пояс — Тбилиси (GMT+4). Температуры в °C.
+      </p>
+    </header>
+
+    <p class="muted" id="wxStatus">Загрузка…</p>
+    <p class="err" id="wxErr" hidden></p>
+    <div class="weather-cities" id="wxRoot"></div>
+  </div>
+
+  <script>
+    (function () {
+      const CITIES = [
+        { name: "Кутаиси", lat: 42.27, lon: 42.7 },
+        { name: "Тбилиси", lat: 41.7151, lon: 44.8271 },
+        { name: "Батуми", lat: 41.6428, lon: 41.6339 },
+      ];
+
+      function wmoRu(code) {
+        const c = Number(code);
+        if (c === 0) return "Ясно";
+        if (c >= 1 && c <= 3) return "Облачно";
+        if (c === 45 || c === 48) return "Туман";
+        if (c >= 51 && c <= 57) return "Морось";
+        if (c >= 61 && c <= 67) return "Дождь";
+        if (c >= 71 && c <= 77) return "Снег";
+        if (c >= 80 && c <= 82) return "Ливень";
+        if (c >= 85 && c <= 86) return "Снегопад";
+        if (c >= 95 && c <= 99) return "Гроза";
+        return "—";
+      }
+
+      function buildUrl(lat, lon) {
+        const p = new URLSearchParams({
+          latitude: String(lat),
+          longitude: String(lon),
+          daily: "weather_code,temperature_2m_max,temperature_2m_min",
+          forecast_days: "7",
+          timezone: "Asia/Tbilisi",
+        });
+        return "https://api.open-meteo.com/v1/forecast?" + p.toString();
+      }
+
+      async function loadCity(city) {
+        const url = buildUrl(city.lat, city.lon);
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(city.name + ": " + r.status);
+        const j = await r.json();
+        const d = j.daily;
+        if (!d || !d.time) throw new Error(city.name + ": нет данных");
+        return { city: city.name, daily: d };
+      }
+
+      function renderRow(dateStr, code, tmax, tmin) {
+        const dt = new Date(dateStr + "T12:00:00");
+        const day = dt.toLocaleDateString("ru-RU", { weekday: "short", day: "numeric", month: "short" });
+        return (
+          "<tr><td>" +
+          day +
+          '</td><td class="temp">' +
+          Math.round(tmin) +
+          "…" +
+          Math.round(tmax) +
+          "°</td><td>" +
+          wmoRu(code) +
+          "</td></tr>"
+        );
+      }
+
+      async function run() {
+        const root = document.getElementById("wxRoot");
+        const status = document.getElementById("wxStatus");
+        const errEl = document.getElementById("wxErr");
+        root.innerHTML = "";
+        errEl.hidden = true;
+        status.textContent = "Загрузка прогноза…";
+
+        try {
+          const results = await Promise.all(CITIES.map(loadCity));
+          status.textContent =
+            "Обновлено: " + new Date().toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" });
+          results.forEach(function (res) {
+            const d = res.daily;
+            const n = d.time.length;
+            let rows = "";
+            for (let i = 0; i < n; i++) {
+              rows += renderRow(d.time[i], d.weather_code[i], d.temperature_2m_max[i], d.temperature_2m_min[i]);
+            }
+            const card = document.createElement("section");
+            card.className = "city-card card";
+            card.innerHTML =
+              "<h2>" +
+              res.city +
+              '</h2><table class="city-table"><thead><tr><th>День</th><th>Ночь…день</th><th></th></tr></thead><tbody>' +
+              rows +
+              "</tbody></table>";
+            root.appendChild(card);
+          });
+        } catch (e) {
+          status.textContent = "";
+          errEl.hidden = false;
+          errEl.textContent = "Не удалось загрузить погоду. Проверьте интернет и откройте страницу снова.";
+        }
+      }
+
+      run();
+    })();
+  </script>
+</body>
+</html>

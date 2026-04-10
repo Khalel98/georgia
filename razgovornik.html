@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Разговорник — Грузия</title>
+  <link rel="stylesheet" href="css/common.css" />
+  <style>
+    .phrase-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .phrase-tabs button {
+      font: inherit;
+      cursor: pointer;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+
+    .phrase-tabs button:hover {
+      background: var(--surface2);
+    }
+
+    .phrase-tabs button[aria-selected="true"] {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .phrase-panel {
+      display: none;
+      overflow-x: auto;
+    }
+
+    .phrase-panel.active {
+      display: block;
+    }
+
+    .phrase-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .phrase-table th,
+    .phrase-table td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .phrase-table th {
+      background: var(--surface2);
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .phrase-table .ge {
+      font-size: 1.05rem;
+      line-height: 1.45;
+    }
+
+    .phrase-table .tr {
+      color: var(--muted);
+      font-family: var(--font);
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Разделы сайта">
+    <a class="brand" href="index.html">Грузия</a>
+    <div class="nav-links">
+      <a href="index.html">Расписание</a>
+      <a href="razgovornik.html" aria-current="page">Разговорник</a>
+      <a href="converter.html">Валюта</a>
+      <a href="pogoda.html">Погода</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header>
+      <h1 class="page-h1">Разговорник</h1>
+      <p class="page-lead">
+        Грузинский, русский и упрощённая латинская транскрипция для чтения вслух. Выберите тему.
+      </p>
+    </header>
+
+    <div class="phrase-tabs" id="phraseTabs" role="tablist" aria-label="Темы фраз"></div>
+    <div id="phrasePanels"></div>
+  </div>
+
+  <script src="phrasebook.js"></script>
+  <script>
+    (function () {
+      const data = window.PHRASEBOOK || [];
+      const tabsEl = document.getElementById("phraseTabs");
+      const panelsEl = document.getElementById("phrasePanels");
+
+      data.forEach(function (cat, i) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("aria-selected", i === 0 ? "true" : "false");
+        btn.setAttribute("aria-controls", "panel-" + cat.id);
+        btn.id = "tab-" + cat.id;
+        btn.textContent = cat.title;
+        btn.addEventListener("click", function () {
+          activate(i);
+        });
+        tabsEl.appendChild(btn);
+
+        const panel = document.createElement("div");
+        panel.className = "phrase-panel card" + (i === 0 ? " active" : "");
+        panel.id = "panel-" + cat.id;
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", "tab-" + cat.id);
+        panel.hidden = i !== 0;
+
+        let html =
+          '<table class="phrase-table"><thead><tr><th>ქართული</th><th>Транскрипция</th><th>По-русски</th></tr></thead><tbody>';
+        cat.phrases.forEach(function (p) {
+          html +=
+            "<tr><td class=\"ge\">" +
+            escapeHtml(p.ge) +
+            '</td><td class="tr">' +
+            escapeHtml(p.tr) +
+            "</td><td>" +
+            escapeHtml(p.ru) +
+            "</td></tr>";
+        });
+        html += "</tbody></table>";
+        panel.innerHTML = html;
+        panelsEl.appendChild(panel);
+      });
+
+      function escapeHtml(t) {
+        const d = document.createElement("div");
+        d.textContent = t;
+        return d.innerHTML;
+      }
+
+      function activate(index) {
+        const tabs = tabsEl.querySelectorAll("button");
+        const panels = panelsEl.querySelectorAll(".phrase-panel");
+        tabs.forEach(function (t, j) {
+          t.setAttribute("aria-selected", j === index ? "true" : "false");
+        });
+        panels.forEach(function (p, j) {
+          p.classList.toggle("active", j === index);
+          p.hidden = j !== index;
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
