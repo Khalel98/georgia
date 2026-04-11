@@ -550,3 +550,36 @@ window.EVENT_PLACES = [
     ],
   },
 ];
+
+/**
+ * Аудиогиды только для ключевых точек (8 файлов, ~2–5 мин, edge-tts).
+ * Индекс = порядок пункта в JSON расписания.
+ */
+window.PLACE_AUDIO = {
+  3: "audio/places/tbilisi_evening.mp3",
+  4: "audio/places/tbilisi_evening.mp3",
+  6: "audio/places/mtskheta.mp3",
+  9: "audio/places/borjomi.mp3",
+  12: "audio/places/batumi_night.mp3",
+  16: "audio/places/batumi_night.mp3",
+  18: "audio/places/batumi_night.mp3",
+  19: "audio/places/batumi_night.mp3",
+  24: "audio/places/batumi_nature.mp3",
+  27: "audio/places/batumi_nature.mp3",
+  14: "audio/places/martvili.mp3",
+  43: "audio/places/martvili.mp3",
+  41: "audio/places/prometheus.mp3",
+  39: "audio/places/kutaisi.mp3",
+};
+
+/** Подписи для справки и озвучки (ключ = имя файла без .mp3). */
+window.PLACE_AUDIO_TITLES = {
+  tbilisi_evening: "Вечерний Тбилиси",
+  mtskheta: "Древняя Грузия",
+  borjomi: "Боржоми — город воды",
+  batumi_night: "Батумская ночь",
+  batumi_nature: "Природа Батуми",
+  martvili: "Каньоны и водопады Грузии",
+  prometheus: "Подземная Грузия",
+  kutaisi: "Кутаиси — город света",
+};

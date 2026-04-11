@@ -464,6 +464,100 @@
         font-size: 0.8rem;
       }
     }
+
+    .place-modal-audioguide {
+      margin: 0.75rem 0 1rem;
+    }
+
+    .btn-audioguide {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--gold);
+      background: var(--gold-dim);
+      color: var(--gold);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .btn-audioguide:hover {
+      background: rgba(212, 168, 75, 0.22);
+      color: var(--text);
+    }
+
+    .btn-audioguide[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: #fff;
+    }
+
+    .place-modal-audioguide-title {
+      margin: 0.4rem 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-style: italic;
+      max-width: 36rem;
+    }
+
+    .place-modal-audioplayer {
+      margin-top: 0.85rem;
+      padding: 0.75rem 0.85rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      max-width: 36rem;
+    }
+
+    .place-modal-audioplayer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem 0.55rem;
+    }
+
+    .place-audio-time {
+      font-size: 0.78rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      min-width: 2.5rem;
+    }
+
+    .place-modal-audioplayer input[type="range"] {
+      flex: 1 1 120px;
+      min-width: 100px;
+      height: 0.35rem;
+      accent-color: var(--gold);
+    }
+
+    .place-audio-skip {
+      font: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0.3rem 0.45rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .place-audio-skip:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .place-audio-skip:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .place-modal-audioplayer input[type="range"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -474,6 +568,7 @@
       <a href="razgovornik.html">Разговорник</a>
       <a href="converter.html">Валюта</a>
       <a href="pogoda.html">Погода</a>
+      <a href="music.html">Музыка</a>
     </div>
   </nav>
   <div class="wrap">
@@ -518,6 +613,52 @@
       </div>
       <p class="place-slider-counter" id="place-slider-counter"></p>
       <div id="place-modal-body" class="place-modal-body"></div>
+      <div id="place-modal-audioguide" class="place-modal-audioguide" hidden>
+        <button
+          type="button"
+          id="place-modal-audioguide-btn"
+          class="btn-audioguide"
+          aria-pressed="false"
+        >
+          🎧 Начать аудиогид
+        </button>
+        <p id="place-modal-audioguide-title" class="place-modal-audioguide-title" hidden></p>
+        <div
+          id="place-modal-audioplayer"
+          class="place-modal-audioplayer"
+          hidden
+        >
+          <div class="place-modal-audioplayer-inner">
+            <button
+              type="button"
+              class="place-audio-skip"
+              id="place-audio-back"
+              aria-label="Назад 10 секунд"
+            >
+              −10
+            </button>
+            <span class="place-audio-time" id="place-audio-time-cur">0:00</span>
+            <input
+              type="range"
+              id="place-audio-progress"
+              min="0"
+              max="1000"
+              value="0"
+              step="1"
+              aria-label="Прогресс аудиогида"
+            />
+            <span class="place-audio-time" id="place-audio-time-dur">0:00</span>
+            <button
+              type="button"
+              class="place-audio-skip"
+              id="place-audio-fwd"
+              aria-label="Вперёд 10 секунд"
+            >
+              +10
+            </button>
+          </div>
+        </div>
+      </div>
       <div id="place-modal-maps" class="place-modal-maps" hidden>
         <div id="place-modal-maps-links" class="place-modal-maps-links"></div>
         <p class="place-modal-maps-hint" id="place-modal-maps-hint" hidden></p>
@@ -528,6 +669,7 @@
   <script src="places-info.js"></script>
   <script src="places-images.js"></script>
   <script src="place-routes.js"></script>
+  <script src="site-audio.js"></script>
   <script id="data" type="application/json">
 [
   {"day":1,"label":"1 мая","title":"1 день 1 мая","time":"11:00","program":"Прибытие в Кутаиси, прохождение таможни, оформление сим карт.","cost":"35 лари за симку ( по желанию)"},
@@ -602,6 +744,20 @@
       const placeModalMaps = document.getElementById("place-modal-maps");
       const placeModalMapsLinks = document.getElementById("place-modal-maps-links");
       const placeModalMapsHint = document.getElementById("place-modal-maps-hint");
+      const placeAudioguide = document.getElementById("place-modal-audioguide");
+      const placeAudioguideBtn = document.getElementById(
+        "place-modal-audioguide-btn"
+      );
+      const placeAudioguideTitle = document.getElementById(
+        "place-modal-audioguide-title"
+      );
+      const placeAudioplayer = document.getElementById("place-modal-audioplayer");
+      const placeAudioProgress = document.getElementById("place-audio-progress");
+      const placeAudioTimeCur = document.getElementById("place-audio-time-cur");
+      const placeAudioTimeDur = document.getElementById("place-audio-time-dur");
+      const placeAudioBack = document.getElementById("place-audio-back");
+      const placeAudioFwd = document.getElementById("place-audio-fwd");
+      let placeAudioguideProgressDragging = false;
 
       const days = [...new Set(items.map((i) => i.day))].sort((a, b) => a - b);
       let filterDay = null;
@@ -766,6 +922,121 @@
         const div = document.createElement("div");
         div.textContent = t;
         return div.innerHTML;
+      }
+
+      function formatPlaceAudioTime(sec) {
+        if (!isFinite(sec) || sec < 0) return "0:00";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return m + ":" + (s < 10 ? "0" : "") + s;
+      }
+
+      function modalAudioSrcEquals(relSrc, audioElSrc) {
+        if (!relSrc || !audioElSrc) return false;
+        try {
+          return (
+            new URL(relSrc, location.href).href ===
+            new URL(audioElSrc, location.href).href
+          );
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function isModalGuideActive() {
+        if (!window.SiteAudio || placeModal.hidden || !placeAudioguideBtn) {
+          return false;
+        }
+        const btnSrc = placeAudioguideBtn.getAttribute("data-audio-src");
+        if (!btnSrc) return false;
+        const a = SiteAudio.getElement();
+        return (
+          SiteAudio.getMode() === "guide" &&
+          modalAudioSrcEquals(btnSrc, a.src)
+        );
+      }
+
+      function syncPlaceAudioguideProgress() {
+        if (
+          placeModal.hidden ||
+          !placeAudioProgress ||
+          !placeAudioTimeCur ||
+          !placeAudioTimeDur
+        ) {
+          return;
+        }
+        const btnSrc =
+          placeAudioguideBtn &&
+          placeAudioguideBtn.getAttribute("data-audio-src");
+        if (!btnSrc) return;
+
+        if (!isModalGuideActive()) {
+          placeAudioTimeCur.textContent = "0:00";
+          placeAudioTimeDur.textContent = "--:--";
+          if (!placeAudioguideProgressDragging) {
+            placeAudioProgress.value = "0";
+          }
+          placeAudioProgress.disabled = true;
+          if (placeAudioBack) placeAudioBack.disabled = true;
+          if (placeAudioFwd) placeAudioFwd.disabled = true;
+          return;
+        }
+
+        const a = SiteAudio.getElement();
+        const d = a.duration;
+        const c = a.currentTime;
+        placeAudioTimeCur.textContent = formatPlaceAudioTime(c);
+        placeAudioTimeDur.textContent = formatPlaceAudioTime(d);
+        if (!placeAudioguideProgressDragging && isFinite(d) && d > 0) {
+          placeAudioProgress.value = String(Math.round((c / d) * 1000));
+        }
+        placeAudioProgress.disabled = false;
+        if (placeAudioBack) placeAudioBack.disabled = false;
+        if (placeAudioFwd) placeAudioFwd.disabled = false;
+      }
+
+      function syncPlaceAudioguideBtn() {
+        if (!placeAudioguideBtn || !window.SiteAudio) return;
+        if (placeModal.hidden) return;
+        const src = placeAudioguideBtn.getAttribute("data-audio-src");
+        if (!src) return;
+        const playing = SiteAudio.isGuidePlaying(src);
+        const pausedHere =
+          SiteAudio.isGuidePausedFor &&
+          SiteAudio.isGuidePausedFor(src);
+        let label = "🎧 Начать аудиогид";
+        if (playing) {
+          label = "⏸ Пауза";
+        } else if (pausedHere) {
+          label = "▶ Продолжить";
+        }
+        placeAudioguideBtn.textContent = label;
+        placeAudioguideBtn.setAttribute(
+          "aria-pressed",
+          playing ? "true" : "false"
+        );
+      }
+
+      if (window.SiteAudio) {
+        SiteAudio.subscribe(function (ev) {
+          if (
+            ev === "play" ||
+            ev === "pause" ||
+            ev === "modechange" ||
+            ev === "mutechange"
+          ) {
+            syncPlaceAudioguideBtn();
+            syncPlaceAudioguideProgress();
+          }
+          if (
+            ev === "timeupdate" ||
+            ev === "ended" ||
+            ev === "loadedmetadata" ||
+            ev === "durationchange"
+          ) {
+            syncPlaceAudioguideProgress();
+          }
+        });
       }
 
       function placeImagePaths(index) {
@@ -939,6 +1210,45 @@
           modalImages = ["places/caucasus-landscape.jpg"];
         }
         modalSlide = 0;
+        const audioPath =
+          window.PLACE_AUDIO && window.PLACE_AUDIO[index];
+        if (placeAudioguide && placeAudioguideBtn) {
+          if (audioPath) {
+            placeAudioguide.hidden = false;
+            placeAudioguideBtn.setAttribute("data-audio-src", audioPath);
+            if (placeAudioguideTitle) {
+              const base = audioPath
+                .replace(/^.*\//, "")
+                .replace(/\.mp3$/i, "");
+              const t =
+                window.PLACE_AUDIO_TITLES &&
+                window.PLACE_AUDIO_TITLES[base];
+              if (t) {
+                placeAudioguideTitle.textContent = t;
+                placeAudioguideTitle.hidden = false;
+              } else {
+                placeAudioguideTitle.textContent = "";
+                placeAudioguideTitle.hidden = true;
+              }
+            }
+            if (placeAudioplayer) {
+              placeAudioplayer.hidden = false;
+              placeAudioguideProgressDragging = false;
+            }
+          } else {
+            placeAudioguide.hidden = true;
+            placeAudioguideBtn.removeAttribute("data-audio-src");
+            if (placeAudioguideTitle) {
+              placeAudioguideTitle.textContent = "";
+              placeAudioguideTitle.hidden = true;
+            }
+            if (placeAudioplayer) {
+              placeAudioplayer.hidden = true;
+            }
+          }
+          syncPlaceAudioguideBtn();
+          syncPlaceAudioguideProgress();
+        }
         placeModal.hidden = false;
         placeModal.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
@@ -947,6 +1257,9 @@
       }
 
       function closePlaceModal() {
+        if (window.SiteAudio) {
+          SiteAudio.stopGuide();
+        }
         placeModal.hidden = true;
         placeModal.setAttribute("aria-hidden", "true");
         placeModalMaps.hidden = true;
@@ -1000,8 +1313,58 @@
       });
 
       placeModal.addEventListener("click", function (e) {
+        const agBtn = e.target.closest("#place-modal-audioguide-btn");
+        if (agBtn && window.SiteAudio) {
+          e.preventDefault();
+          const src = agBtn.getAttribute("data-audio-src");
+          if (!src) return;
+          if (SiteAudio.isGuidePlaying(src)) {
+            SiteAudio.pause();
+          } else {
+            SiteAudio.playGuide(src);
+          }
+          syncPlaceAudioguideBtn();
+          syncPlaceAudioguideProgress();
+          return;
+        }
         if (e.target.hasAttribute("data-place-close")) closePlaceModal();
       });
+
+      if (placeAudioProgress && window.SiteAudio) {
+        placeAudioProgress.addEventListener("input", function () {
+          if (!isModalGuideActive()) return;
+          placeAudioguideProgressDragging = true;
+          const a = SiteAudio.getElement();
+          const d = a.duration;
+          if (isFinite(d) && d > 0) {
+            SiteAudio.seek((parseFloat(placeAudioProgress.value) / 1000) * d);
+          }
+        });
+        placeAudioProgress.addEventListener("change", function () {
+          placeAudioguideProgressDragging = false;
+          syncPlaceAudioguideProgress();
+        });
+      }
+
+      function bindPlaceAudioSkip(btn, deltaSec) {
+        if (!btn) return;
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (!window.SiteAudio || !isModalGuideActive()) return;
+          const a = SiteAudio.getElement();
+          const d = a.duration;
+          let t = a.currentTime + deltaSec;
+          if (isFinite(d) && d > 0) {
+            t = Math.max(0, Math.min(d, t));
+          } else {
+            t = Math.max(0, t);
+          }
+          SiteAudio.seek(t);
+          syncPlaceAudioguideProgress();
+        });
+      }
+      bindPlaceAudioSkip(placeAudioBack, -10);
+      bindPlaceAudioSkip(placeAudioFwd, 10);
 
       placePrev.addEventListener("click", function () {
         modalSlide -= 1;

@@ -1,4 +1,4 @@
-const CACHE_NAME = "gruzia-trip-v1";
+const CACHE_NAME = "gruzia-trip-v5";
 
 function asset(path) {
   return new URL(path, self.location).href;
@@ -9,10 +9,14 @@ const PRECACHE = [
   "razgovornik.html",
   "converter.html",
   "pogoda.html",
+  "music.html",
   "css/common.css",
   "places-info.js",
   "places-images.js",
   "place-routes.js",
+  "site-audio.js",
+  "music-data.js",
+  "music-page.js",
   "phrasebook.js",
   "register-sw.js",
   "places/kutaisi-airport.jpg",
@@ -57,6 +61,16 @@ const PRECACHE = [
   "places/prometheus-cave.jpg",
   "places/canyon-river.jpg",
   "places/dumplings-plate.jpg",
+  "audio/places/tbilisi_evening.mp3",
+  "audio/places/mtskheta.mp3",
+  "audio/places/borjomi.mp3",
+  "audio/places/batumi_night.mp3",
+  "audio/places/batumi_nature.mp3",
+  "audio/places/martvili.mp3",
+  "audio/places/prometheus.mp3",
+  "audio/places/kutaisi.mp3",
+  "audio/music/chakrulo.mp3",
+  "audio/music/shen_khar_venakhi.mp3",
 ].map(asset);
 
 self.addEventListener("install", function (event) {
@@ -111,7 +125,8 @@ self.addEventListener("fetch", function (event) {
             ct.includes("text/html") ||
             ct.includes("javascript") ||
             ct.includes("text/css") ||
-            ct.includes("image/")
+            ct.includes("image/") ||
+            ct.includes("audio/")
           ) {
             try {
               const copy = response.clone();
