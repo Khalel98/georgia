@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Челлендж — Грузия</title>
+  <link rel="stylesheet" href="css/common.css" />
+  <style>
+    .challenge-page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding-bottom: 2.5rem;
+    }
+
+    .challenge-hero {
+      margin: 1.25rem 0 1.5rem;
+      padding: 1.35rem 1.25rem 1.4rem;
+      border-radius: 20px;
+      background: linear-gradient(
+        135deg,
+        rgba(45, 106, 79, 0.22) 0%,
+        rgba(26, 34, 45, 0.92) 45%,
+        rgba(196, 30, 58, 0.12) 100%
+      );
+      border: 1px solid rgba(46, 58, 77, 0.9);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .challenge-hero::before {
+      content: "";
+      position: absolute;
+      inset: -40% -20% auto;
+      height: 80%;
+      background: radial-gradient(
+        circle,
+        rgba(212, 168, 75, 0.15) 0%,
+        transparent 55%
+      );
+      pointer-events: none;
+    }
+
+    .challenge-hero-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .challenge-kicker {
+      margin: 0 0 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .challenge-hero h1 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.35rem, 4.5vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .challenge-hero-lead {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .challenge-badges {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.45rem;
+      margin: 1.25rem 0 1rem;
+    }
+
+    @media (max-width: 520px) {
+      .challenge-badges {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .challenge-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.2rem;
+      padding: 0.55rem 0.35rem;
+      border-radius: 14px;
+      background: rgba(15, 20, 25, 0.55);
+      border: 1px solid rgba(46, 58, 77, 0.65);
+      opacity: 0.38;
+      filter: grayscale(0.85);
+      transition: opacity 0.25s, filter 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .challenge-badge.is-unlocked {
+      opacity: 1;
+      filter: none;
+    }
+
+    .challenge-badge.is-current {
+      border-color: rgba(212, 168, 75, 0.65);
+      box-shadow: 0 0 0 1px rgba(212, 168, 75, 0.25), 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .challenge-badge-emoji {
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .challenge-badge-title {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .challenge-badge-name {
+      font-size: 0.68rem;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .challenge-xp-wrap {
+      margin-top: 0.25rem;
+    }
+
+    .challenge-xp-bar {
+      height: 12px;
+      border-radius: 999px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .challenge-xp-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--gold) 55%, #e8b84a);
+      box-shadow: 0 0 20px rgba(212, 168, 75, 0.35);
+      transition: width 0.45s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+
+    .challenge-xp-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 0.45rem 0 0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .challenge-xp-label span:last-child {
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .challenge-level-title {
+      margin: 0.85rem 0 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .challenge-level-emoji {
+      margin-right: 0.15rem;
+    }
+
+    .challenge-level-num {
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .challenge-stats {
+      margin: 0.35rem 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .challenge-legend-card {
+      margin: 1.25rem 0 0;
+      padding: 1.1rem 1.15rem;
+      border-radius: 16px;
+      background: linear-gradient(
+        145deg,
+        rgba(212, 168, 75, 0.18) 0%,
+        rgba(196, 30, 58, 0.12) 100%
+      );
+      border: 1px solid rgba(212, 168, 75, 0.45);
+      text-align: center;
+    }
+
+    .challenge-legend-card[hidden] {
+      display: none !important;
+    }
+
+    .challenge-legend-card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.2rem;
+    }
+
+    .challenge-legend-card p {
+      margin: 0;
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .challenge-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      margin: 1.5rem 0 1rem;
+    }
+
+    .challenge-toolbar p {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: 22rem;
+      line-height: 1.45;
+    }
+
+    .challenge-reset {
+      font: inherit;
+      font-size: 0.8rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .challenge-reset:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .challenge-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .challenge-section-title {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      font-weight: 700;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .challenge-quest-ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .challenge-quest-item {
+      margin: 0;
+    }
+
+    .challenge-quest-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.75rem 0.85rem;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .challenge-quest-label:hover {
+      border-color: rgba(212, 168, 75, 0.35);
+    }
+
+    .challenge-quest-cb {
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .challenge-quest-emoji {
+      font-size: 1.25rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .challenge-quest-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .challenge-quest-title {
+      font-size: 0.92rem;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .challenge-quest-desc {
+      font-size: 0.8rem;
+      line-height: 1.52;
+      color: var(--muted);
+    }
+
+    .challenge-quest-xp {
+      flex-shrink: 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold);
+      padding: 0.2rem 0.45rem;
+      border-radius: 8px;
+      background: var(--gold-dim);
+    }
+
+    .challenge-quest-label:has(.challenge-quest-cb:checked) .challenge-quest-title,
+    .challenge-quest-label:has(.challenge-quest-cb:checked) .challenge-quest-desc,
+    .challenge-quest-label:has(.challenge-quest-cb:checked) .challenge-quest-emoji {
+      opacity: 0.72;
+    }
+
+    .challenge-quest-label:has(.challenge-quest-cb:checked) {
+      background: rgba(45, 106, 79, 0.12);
+      border-color: rgba(45, 106, 79, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Разделы сайта">
+    <a class="brand" href="index.html">Грузия</a>
+    <div class="nav-links">
+      <a href="index.html">Расписание</a>
+      <a href="razgovornik.html">Разговорник</a>
+      <a href="converter.html">Валюта</a>
+      <a href="pogoda.html">Погода</a>
+      <a href="music.html">Музыка</a>
+      <a href="challenge.html" aria-current="page">Челлендж</a>
+    </div>
+  </nav>
+  <div class="wrap challenge-page">
+    <div class="challenge-hero">
+      <div class="challenge-hero-inner">
+        <p class="challenge-kicker">Интерактивный квест</p>
+        <h1>Челлендж: стань настоящим грузином</h1>
+        <p class="challenge-hero-lead">
+          Отмечай задания по мере путешествия: копи XP, повышай уровень и открой финальное достижение.
+          Прогресс сохраняется в этом браузере.
+        </p>
+        <div id="challenge-badges" class="challenge-badges" aria-label="Уровни"></div>
+        <div class="challenge-xp-wrap">
+          <div class="challenge-xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="1430" aria-labelledby="challenge-xp-label-text">
+            <div id="challenge-xp-bar-fill" class="challenge-xp-bar-fill"></div>
+          </div>
+          <p class="challenge-xp-label" id="challenge-xp-label-text">
+            <span id="challenge-xp-label">0 / 1430 XP</span>
+            <span>путь к легенде</span>
+          </p>
+        </div>
+        <p id="challenge-level-title" class="challenge-level-title">—</p>
+        <p id="challenge-stats" class="challenge-stats"></p>
+        <div id="challenge-legend-card" class="challenge-legend-card" hidden>
+          <h2>🔥 Ты — легенда Грузии</h2>
+          <p>800+ XP и не меньше 25 квестов — ты прошёл путь от туриста до своего.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="challenge-toolbar">
+      <p>
+        Финальная награда открывается при <strong>800+ XP</strong> и минимум <strong>25 выполненных квестах</strong>.
+      </p>
+      <button type="button" class="challenge-reset" id="challenge-reset">Сбросить прогресс</button>
+    </div>
+
+    <div id="challenge-quest-list"></div>
+  </div>
+
+  <script src="challenge-data.js"></script>
+  <script src="challenge-page.js"></script>
+  <script src="register-sw.js"></script>
+</body>
+</html>

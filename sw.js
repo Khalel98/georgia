@@ -1,4 +1,4 @@
-const CACHE_NAME = "gruzia-trip-v5";
+const CACHE_NAME = "gruzia-trip-v6";
 
 function asset(path) {
   return new URL(path, self.location).href;
@@ -10,6 +10,7 @@ const PRECACHE = [
   "converter.html",
   "pogoda.html",
   "music.html",
+  "challenge.html",
   "css/common.css",
   "places-info.js",
   "places-images.js",
@@ -17,6 +18,8 @@ const PRECACHE = [
   "site-audio.js",
   "music-data.js",
   "music-page.js",
+  "challenge-data.js",
+  "challenge-page.js",
   "phrasebook.js",
   "register-sw.js",
   "places/kutaisi-airport.jpg",
