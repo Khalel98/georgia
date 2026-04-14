@@ -46,6 +46,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem 0.65rem;
   padding: 0.65rem 1rem;
   background: var(--surface);
@@ -59,7 +60,7 @@ body {
   font-weight: 700;
   color: var(--gold);
   text-decoration: none;
-  margin-right: 0.5rem;
+  margin-right: 0;
   padding: 0.4rem 0;
 }
 
@@ -72,6 +73,7 @@ body {
   flex-wrap: wrap;
   gap: 0.35rem;
   align-items: center;
+  justify-content: center;
 }
 
 .site-nav .nav-links a {
